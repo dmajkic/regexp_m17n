@@ -8,6 +8,12 @@ class RegexpTest < MiniTest::Unit::TestCase
 
       if enc.dummy?
 
+        # Special handling for utf7, snce jruby is
+        # regarding it as non ascii compatibile 
+        if enc.name == "UTF-7"
+          return assert(RegexpM17N.non_empty?('.'.force_encoding("UTF-8")))
+        end
+
         enc_ascii = Encoding::Converter.asciicompat_encoding(enc.name)
 
         unless enc_ascii.nil?
@@ -15,7 +21,8 @@ class RegexpTest < MiniTest::Unit::TestCase
           # use that encoding instead of dummy
           assert(RegexpM17N.non_empty?('.'.encode(enc_ascii)))
         else
-          # This is where ISO-2022-JP-2 and UTF-7 land.
+          # This is where ISO-2022-JP-2 land. UTF-7 also, but
+          # it is already handled for jruby.
           # Utf-8 is forced in (changed) non_empy? method,
           # so forcung utf-8 skpis extra conversion
           # since strings in both encodings are valid utf-8
